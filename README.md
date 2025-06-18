@@ -1,3 +1,4 @@
+````
 kube-counter/
 ├── backend/                # Golang API
 ├── frontend/               # React app
@@ -10,3 +11,4 @@ kube-counter/
 │   └── postgresql/         # Helm release config (values.yaml)
 ├── scripts/                # Utility scripts
 ├── README.md
+```

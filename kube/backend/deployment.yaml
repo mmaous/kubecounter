@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubecounter-server
+  namespace: kubecounter
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: kubecounter-server
+  template:
+    metadata:
+      labels:
+        app: kubecounter-server
+    spec:
+      containers:
+      - name: kubecounter-server
+        image: mmaous/kubecounter:server
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        env:
+          - name: DB_HOST
+            value: postgres
+          - name: DB_PORT
+            value: "5432"
+          - name: DB_USER
+            value: devuser
+          - name: DB_PASSWORD
+            value: devpass
+          - name: DB_NAME
+            value: counterdb
+          - name: SERVER_PORT
+            value: "8080"

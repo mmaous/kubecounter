@@ -1,3 +1,10 @@
+volumes:
+  postgres_data:
+
+networks:
+  dmz:
+    driver: bridge
+    
 services:
   postgres:
     image: postgres:kubecounter
@@ -11,11 +18,40 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dmz
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U devuser"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-volumes:
-  postgres_data:
+  backend:
+    image: kubecounter:server
+    container_name: kubecounter-server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: devuser
+      DB_PASSWORD: devpass
+      DB_NAME: counterdb
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    networks:
+      - dmz
+
+  frontend:
+    image: kubecounter:client
+    container_name: kubecounter-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:3000"
+    environment:
+      VITE_API_BASE_URL: http://backend:8080
+    networks:
+      - dmz

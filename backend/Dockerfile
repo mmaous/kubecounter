@@ -1,14 +1,28 @@
-# Build stage
-FROM golang:1.23-alpine AS builder
+FROM golang:1.23.10-alpine AS builder
+# Set working directory
 WORKDIR /app
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . .
-RUN go build -o myapp
 
-# Final stage
-FROM alpine:latest
+# Copy the source code into the container
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy the rest of the source code
+COPY . .
+
+# Build the application
+RUN go build -o server ./main.go
+
+# -----
+FROM alpine:3.22.0 AS runner
 WORKDIR /app
-COPY --from=builder /app/myapp .
+
+# Copy the built binary from builder
+COPY --from=builder /app/server .
+
+# Expose the port
 EXPOSE 8080
-CMD ["./myapp"]
+
+# Run the binaryÊ
+CMD ["./server"]

@@ -1,22 +1,19 @@
-FROM node:20-alpine AS deps
+FROM node:22.17.0-alpine AS deps
 WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 
-FROM node:20-alpine AS builder
+FROM deps AS builder
 WORKDIR /app
 COPY . .
-ARG VITE_API_BASE_URL
-ENV VITE_API_URL=$VITE_API_BASE_URL
-COPY --from=deps /app/node_modules ./node_modules
+
+ARG API_URL=http://localhost:8080
+ENV NODE_ENV=production
+ENV VITE_API_URL=$API_URL
+
 RUN yarn build
 
-FROM node:20-alpine AS runner
-WORKDIR /app
-ARG VITE_API_BASE_URL
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-COPY package.json yarn.lock ./
-RUN yarn install --production --frozen-lockfile
-COPY --from=builder /app/build ./build
-EXPOSE 3000
-CMD ["yarn", "start"]
+FROM nginx:1.29-alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

@@ -70,6 +70,7 @@ func main() {
 		rows, err := db.Query("SELECT id, name, value FROM counters ORDER BY id")
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			log.Fatalln(err.Error())
 			return
 		}
 		defer rows.Close()
@@ -79,6 +80,8 @@ func main() {
 			var counter Counter
 			if err := rows.Scan(&counter.ID, &counter.Name, &counter.Value); err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Fatalln(err.Error())
+
 				return
 			}
 			counters = append(counters, counter)
@@ -92,6 +95,8 @@ func main() {
 		id, err := strconv.Atoi(idParam)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+			log.Fatalln(err.Error())
+
 			return
 		}
 
@@ -99,9 +104,13 @@ func main() {
 		err = db.QueryRow("SELECT id, name, value FROM counters WHERE id = $1", id).Scan(&counter.ID, &counter.Name, &counter.Value)
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Counter not found"})
+			log.Fatalln(err.Error())
+
 			return
 		} else if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			log.Fatalln(err.Error())
+
 			return
 		}
 
@@ -113,6 +122,8 @@ func main() {
 		var counter Counter
 		if err := c.ShouldBindJSON(&counter); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			log.Fatalln(err.Error())
+
 			return
 		}
 
@@ -120,16 +131,22 @@ func main() {
 		res, err := db.Exec(query, counter.Name, counter.Value, id)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			log.Fatalln(err.Error())
+
 			return
 		}
 
 		rowsAffected, err := res.RowsAffected()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			log.Fatalln(err.Error())
+
 			return
 		}
 		if rowsAffected == 0 {
 			c.JSON(http.StatusNotFound, gin.H{"error": "counter not found"})
+			log.Fatalln(err.Error())
+
 			return
 		}
 
@@ -142,6 +159,8 @@ func main() {
 		_, err := db.Exec("DELETE FROM counters WHERE id = $1", id)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			log.Fatalln(err.Error())
+
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"status": "deleted"})

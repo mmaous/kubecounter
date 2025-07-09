@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kubecounter-ingress
+  namespace: kubecounter
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /kubecounter
+        pathType: Prefix
+        backend:
+          service:
+            name: kubecounter-client
+            port:
+              number: 3000

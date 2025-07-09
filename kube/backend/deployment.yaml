@@ -4,7 +4,7 @@ metadata:
   name: kubecounter-server
   namespace: kubecounter
 spec:
-  replicas: 4
+  replicas: 1
   selector:
     matchLabels:
       app: kubecounter-server
@@ -14,27 +14,34 @@ spec:
         app: kubecounter-server
     spec:
       containers:
-      - name: kubecounter-server
-        image: mmaous/kubecounter:server
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-          requests:
-            memory: "128Mi"
-            cpu: "500m"
-        ports:
-        - containerPort: 8080
-        env:
-          - name: DB_HOST
-            value: postgres
-          - name: DB_PORT
-            value: "5432"
-          - name: DB_USER
-            value: devuser
-          - name: DB_PASSWORD
-            value: devpass
-          - name: DB_NAME
-            value: counterdb
-          - name: SERVER_PORT
-            value: "8080"
+        - name: kubecounter-server
+          image: mmaous/kubecounter:server
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+            requests:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              value: postgres-svc
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: devuser
+            - name: DB_PASSWORD
+              value: devpass
+            - name: DB_NAME
+              value: counterdb
+            - name: SERVER_PORT
+              value: "8080"
+          readinessProbe:
+            httpGet:
+              path: /counters
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10

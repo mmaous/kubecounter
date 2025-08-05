@@ -2,6 +2,9 @@ FROM golang:1.23.10-alpine AS builder
 # Set working directory
 WORKDIR /app
 
+ENV GIN_MODE=release
+ENV SERVE_PORT=8080
+
 # Copy the source code into the container
 COPY go.mod go.sum ./
 

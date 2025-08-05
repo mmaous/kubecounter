@@ -39,9 +39,9 @@ spec:
               value: counterdb
             - name: SERVER_PORT
               value: "8080"
-          readinessProbe:
-            httpGet:
-              path: /counters
-              port: 8080
-            initialDelaySeconds: 5
-            periodSeconds: 10
+          # readinessProbe:
+          #   httpGet:
+          #     path: /counters
+          #     port: 8080
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 10

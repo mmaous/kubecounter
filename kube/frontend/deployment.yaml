@@ -18,7 +18,7 @@ spec:
           image: mmaous/kubecounter:client
           imagePullPolicy: Always
           ports:
-            - containerPort: 3000
+            - containerPort: 80
           env:
             - name: VITE_API_BASE_URL
               value: http://kubecounter-svc:8080

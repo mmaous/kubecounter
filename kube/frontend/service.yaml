@@ -6,9 +6,6 @@ metadata:
 spec:
   selector:
     app: kubecounter-client
-  type: NodePort
   ports:
-    - port: 3000
-      targetPort: 3000
-      nodePort: 30173  # optional, maps to http://<node>:30173
----
+    - port: 80
+      targetPort: 80

@@ -24,7 +24,7 @@ KubeCounter is a full-stack web application demonstrating modern Kubernetes depl
 
 ## Prerequisites
 
-- Kubernetes cluster (v1.19+)
+- Kubernetes cluster (v1.33+)
 - kubectl configured
 - Nginx Ingress Controller installed
 - Docker images available at `mmaous/kubecounter:client` and `mmaous/kubecounter:server`

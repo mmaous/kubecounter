@@ -4,6 +4,9 @@ kind: Ingress
 metadata:
   name: kubecounter-ingress-backend
   namespace: kubecounter
+  labels:
+    app.kubernetes.io/name: kubecounter
+
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
@@ -15,6 +18,6 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: kubecounter-svc
+                name: kubecounter-api-svc
                 port:
                   number: 8080

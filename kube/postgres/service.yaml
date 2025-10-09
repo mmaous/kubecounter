@@ -3,8 +3,16 @@ kind: Service
 metadata:
   name:  postgres-svc
   namespace: kubecounter
+  labels:
+    app.kubernetes.io/name: kubecounter
+    app.kubernetes.io/component: database
 spec:
-  selector:
-    app:  app-postgres
+  clusterIP: None
+
   ports:
     - port:  5432
+      name: tcp-5432
+
+  selector:
+    app.kubernetes.io/name: kubecounter
+    app.kubernetes.io/component: database

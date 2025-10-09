@@ -3,15 +3,21 @@ kind: Deployment
 metadata:
   name: kubecounter-server
   namespace: kubecounter
+  labels:
+    app.kubernetes.io/name: kubecounter
+    app.kubernetes.io/component: api	
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kubecounter-server
+      app.kubernetes.io/name: kubecounter
+      app.kubernetes.io/component: api
+
   template:
     metadata:
       labels:
-        app: kubecounter-server
+        app.kubernetes.io/name: kubecounter
+        app.kubernetes.io/component: api
     spec:
       containers:
         - name: kubecounter-server
@@ -31,17 +37,18 @@ spec:
               value: postgres-svc
             - name: DB_PORT
               value: "5432"
-            - name: DB_USER
-              value: devuser
-            - name: DB_PASSWORD
-              value: devpass
             - name: DB_NAME
               value: counterdb
             - name: SERVER_PORT
               value: "8080"
-          # readinessProbe:
-          #   httpGet:
-          #     path: /counters
-          #     port: 8080
-          #   initialDelaySeconds: 5
-          #   periodSeconds: 10
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: DB_USR 
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-creds
+                  key: DB_PWD

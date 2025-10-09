@@ -3,15 +3,21 @@ kind: Deployment
 metadata:
   name: kubecounter-client
   namespace: kubecounter
+  labels:
+    app.kubernetes.io/name: kubecounter
+    app.kubernetes.io/component: frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kubecounter-client
+      app.kubernetes.io/name: kubecounter
+      app.kubernetes.io/component: frontend
   template:
     metadata:
       labels:
-        app: kubecounter-client
+        app.kubernetes.io/name: kubecounter
+        app.kubernetes.io/component: frontend
+    
     spec:
       containers:
         - name: kubecounter-client
@@ -19,9 +25,6 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 80
-          env:
-            - name: VITE_API_BASE_URL
-              value: http://kubecounter-svc:8080
           resources:
             limits:
               memory: "128Mi"

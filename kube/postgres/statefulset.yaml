@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: app-postgres
+  namespace: kubecounter
+  labels:
+    app.kubernetes.io/name: kubecounter
+    app.kubernetes.io/component: database
+spec:
+  serviceName: postgres-svc
+  minReadySeconds: 10
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kubecounter
+      app.kubernetes.io/component: database
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kubecounter
+        app.kubernetes.io/component: database
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16-alpine
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-creds
+              key: DB_USR
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-creds
+              key: DB_PWD
+        - name: POSTGRES_DB
+          value: counterdb
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - devuser
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - devuser
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+          subPath: pgdata
+        - name: postgres-init
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: postgres-init
+        configMap:
+          name: postgres-init
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+      labels:
+        app.kubernetes.io/name: kubecounter
+        app.kubernetes.io/component: database
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      storageClassName: local-path
+      resources:
+        requests:
+          storage: 1Gi

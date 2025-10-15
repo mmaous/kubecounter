@@ -21,8 +21,8 @@ spec:
     spec:
       containers:
         - name: kubecounter-client
-          image: mmaous/kubecounter:client
-          imagePullPolicy: Always
+          image: mmaous/kubecounter:client-v2
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
           resources:

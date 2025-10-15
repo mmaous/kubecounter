@@ -21,8 +21,8 @@ spec:
     spec:
       containers:
         - name: kubecounter-server
-          image: mmaous/kubecounter:server
-          imagePullPolicy: Always
+          image: mmaous/kubecounter:server-v2
+          imagePullPolicy: IfNotPresent
           resources:
             limits:
               memory: "128Mi"
@@ -52,3 +52,16 @@ spec:
                 secretKeyRef:
                   name: db-creds
                   key: DB_PWD
+          livenessProbe:
+            httpGet:
+              path: /counters
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 40
+          
+          readinessProbe:
+            httpGet:
+              path: /counters
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 20	

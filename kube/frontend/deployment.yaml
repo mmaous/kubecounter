@@ -21,10 +21,13 @@ spec:
     spec:
       containers:
         - name: kubecounter-client
-          image: mmaous/kubecounter:client-v2
+          image: mmaous/kubecounter:client-v4
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
+          env:
+            - name: VITE_API_URL
+              value: /api
           resources:
             limits:
               memory: "128Mi"

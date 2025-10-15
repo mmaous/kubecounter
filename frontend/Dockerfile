@@ -7,9 +7,7 @@ FROM deps AS builder
 WORKDIR /app
 COPY . .
 
-ARG API_URL=/api
 ENV NODE_ENV=production
-ENV VITE_API_URL=$API_URL
 
 RUN yarn build
 
@@ -18,6 +16,12 @@ FROM nginx:1.29-alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 80
+
+ENTRYPOINT ["/entrypoint.sh"]
+
 CMD ["nginx", "-g", "daemon off;"]

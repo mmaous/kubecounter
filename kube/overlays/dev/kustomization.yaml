@@ -3,11 +3,6 @@ kind: Kustomization
 
 namespace: kubecounter
 
-labels:
-  - includeSelectors: true
-    pairs:
-      cluster: europe-west1
-
 resources:
   - ../../base
 

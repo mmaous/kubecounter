@@ -5,7 +5,7 @@ metadata:
   namespace: kubecounter
   labels:
     app.kubernetes.io/name: kubecounter
-    app.kubernetes.io/component: api	
+    app.kubernetes.io/component: api
 spec:
   replicas: 1
   selector:
@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: kubecounter-server
-          image: mmaous/kubecounter:server-v2
+          image: mmaous/kubecounter-server:dev-latest
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -46,7 +46,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: db-creds
-                  key: DB_USR 
+                  key: DB_USR
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -58,10 +58,10 @@ spec:
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 40
-          
+
           readinessProbe:
             httpGet:
               path: /counters
               port: 8080
             initialDelaySeconds: 5
-            periodSeconds: 20	
+            periodSeconds: 20

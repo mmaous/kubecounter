@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: mmaous/kubecounter:postgres-v2
+        image: postgres:18@sha256:d129b9577d274bb96cbd44d902bdeb1b935c89247d161241e9154cba64e13df4
         ports:
         - containerPort: 5432
         env:

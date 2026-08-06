@@ -7,7 +7,7 @@ ENV SERVE_PORT=8080
 
 # Copy the source code into the container
 COPY go.mod go.sum ./
-
+ENV GOPROXY=https://proxy.golang.org,direct
 # Download dependencies
 RUN go mod download
 

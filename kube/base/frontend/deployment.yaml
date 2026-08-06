@@ -17,11 +17,11 @@ spec:
       labels:
         app.kubernetes.io/name: kubecounter
         app.kubernetes.io/component: frontend
-    
+
     spec:
       containers:
         - name: kubecounter-client
-          image: mmaous/kubecounter:client-v4
+          image: mmaous/kubecounter-client:dev-latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80

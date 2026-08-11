@@ -11,5 +11,5 @@ spec:
   - "kubecounter.mmlabs.me"
   rules:
   - backendRefs:
-    - name:  kubecounter-frontend-svc
+    - name:  kubecounter-client-svc
       port: 80

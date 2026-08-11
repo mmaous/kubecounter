@@ -14,4 +14,4 @@ secretGenerator:
 images:
 - name: mmaous/kubecounter-client
   newName: mmaous/kubecounter-client
-  newTag: e257622
+  newTag: 7d511b6

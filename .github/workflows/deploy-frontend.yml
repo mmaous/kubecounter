@@ -1,0 +1,62 @@
+name: Deploy Frontend to Argo CD
+
+# Trigger ONLY on the dev branch
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'frontend/**'
+
+jobs:
+  build-and-update-manifests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Get short Git SHA
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            mmaous/kubecounter-client:${{ steps.vars.outputs.sha_short }}
+            mmaous/kubecounter-client:dev-latest
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Update Kustomize image tag
+        run: |
+          cd kube/overlays/dev
+          # This command will automatically ADD the 'images' block to your kustomization.yaml
+          kustomize edit set image mmaous/kubecounter-client=mmaous/kubecounter-client:${{ steps.vars.outputs.sha_short }}
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+          git add kube/overlays/dev/kustomization.yaml
+          git commit -m "deploy: update frontend image to ${{ steps.vars.outputs.sha_short }} [skip ci]"
+
+          # Push strictly to the dev branch!
+          git push origin dev

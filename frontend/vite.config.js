@@ -7,6 +7,6 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   outputDir: "build",
   define: {
-	"import.meta.env.VITE_API_URL": JSON.stringify('__VITE_API_URL__')
-	}
+    "import.meta.env.VITE_API_URL": JSON.stringify('__VITE_API_URL__')
+  }
 });

@@ -2,18 +2,16 @@
 # Exit script on any error
 set -e
 
-# Path to the main JavaScript file, adjust if necessary
-JS_FILE=$(find /usr/share/nginx/html/assets -name "index-*.js")
-
-# Check if the API_BASE_URL is set, otherwise use a default
-# This value will come from the Kubernetes Deployment 'env' block
+# Grab the environment variable passed by the Kubernetes Deployment.
+# If K8s didn't pass one, fallback to the relative path "/api"
 export API_BASE_URL=${VITE_API_URL:-/api}
 
-echo "Configuring API URL to: $API_BASE_URL"
+echo "Injecting API URL into React build: $API_BASE_URL"
 
-# Use sed to replace the placeholder with the actual value
-sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" $JS_FILE
+# Search all JS files in Nginx's serving directory and replace the exact placeholder
+find /usr/share/nginx/html -type f -name "*.js" | while read -r JS_FILE; do
+  sed -i "s|__VITE_API_URL__|$API_BASE_URL|g" "$JS_FILE"
+done
 
-# Execute the original command (nginx)
-# This is crucial, `exec` replaces the shell process with the nginx process
+# Execute the original container command (nginx -g 'daemon off;')
 exec "$@"

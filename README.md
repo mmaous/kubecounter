@@ -4,30 +4,41 @@ A cloud-native counter application built with Kubernetes, featuring a React fron
 
 ## Description
 
-KubeCounter is a full-stack web application demonstrating modern Kubernetes deployment practices. It showcases a three-tier architecture with proper service mesh configuration, persistent storage, and ingress routing.
+KubeCounter is a full-stack web application demonstrating modern Kubernetes deployment practices. It showcases a three-tier architecture with proper service mesh configuration, persistent storage, zero-trust network policies, and Gateway API routing.
 
 ## Architecture
 
 - **Frontend**: React-based client served via Nginx
 - **Backend**: REST API server (Port 8080)
 - **Database**: PostgreSQL 16 with persistent storage
-- **Ingress**: Nginx Ingress Controller with path-based routing
+- **Ingress**: Gateway API (HTTPRoute) with path-based routing
+- **Security**: Granular NetworkPolicies enforcing zero-trust segmentation
 
 ## Features
 
-- Kubernetes-native deployment
+- Kubernetes-native deployment managed with Kustomize
+- Zero-trust network security with granular NetworkPolicies
 - Secret management for database credentials
 - Persistent data storage with StatefulSets
-- Ingress routing for frontend and API
+- Gateway API routing for frontend and API
 - PostgreSQL database with initialization scripts
 - Consistent labeling and best practices
+
+## Network Security
+
+KubeCounter implements a zero-trust network model using Kubernetes NetworkPolicies:
+
+- **Default Deny All**: Restricts all incoming and outgoing traffic across the namespace by default
+- **Frontend Policy**: Allows inbound HTTP traffic on port 80 from ingress gateways and DNS egress
+- **Backend Policy**: Allows inbound API traffic on port 8080 from frontend pods/gateways, DNS egress, and outbound egress on port 5432 to PostgreSQL
+- **Database Policy**: Restricts inbound database traffic on port 5432 strictly to backend API pods only
 
 ## Prerequisites
 
 - Kubernetes cluster (v1.33+)
 - kubectl configured
-- Nginx Ingress Controller installed
-- Docker images available at `mmaous/kubecounter:client` and `mmaous/kubecounter:server`
+- Gateway API controller / Gateway installed
+- Docker images available at `mmaous/kubecounter-client` and `mmaous/kubecounter-server`
 
 ## Quick Start
 
@@ -40,90 +51,102 @@ cd kubecounter
 
 ### 2. Deploy to Kubernetes
 
-```bash
-# Create namespace
-kubectl apply -f kube/namespace.yaml
+Using Kustomize (recommended):
 
-# Deploy secrets
-kubectl apply -f kube/secrets.yaml
+```bash
+kubectl apply -k kube/overlays/dev
+```
+
+Or apply individual base manifests:
+
+```bash
+# Create namespace and default deny security policy
+kubectl apply -f kube/base/namespace.yaml
+kubectl apply -f kube/base/default-deny.yaml
 
 # Deploy PostgreSQL
-kubectl apply -f kube/postgres/init-sql-configmap.yaml
-kubectl apply -f kube/postgres/statefulset.yaml
-kubectl apply -f kube/postgres/service.yaml
+kubectl apply -f kube/base/postgres/statefulset.yaml
+kubectl apply -f kube/base/postgres/service.yaml
+kubectl apply -f kube/base/postgres/networkpolicy.yaml
 
-# Deploy backend
-kubectl apply -f kube/backend/deployment.yaml
-kubectl apply -f kube/backend/service.yaml
-kubectl apply -f kube/backend/ingress.yaml
+# Deploy backend API
+kubectl apply -f kube/base/backend/deployment.yaml
+kubectl apply -f kube/base/backend/service.yaml
+kubectl apply -f kube/base/backend/networkpolicy.yaml
 
 # Deploy frontend
-kubectl apply -f kube/frontend/deployment.yaml
-kubectl apply -f kube/frontend/service.yaml
-kubectl apply -f kube/frontend/ingress.yaml
+kubectl apply -f kube/base/frontend/deployment.yaml
+kubectl apply -f kube/base/frontend/service.yaml
+kubectl apply -f kube/base/frontend/httproute.yaml
+kubectl apply -f kube/base/frontend/networkpolicy.yaml
 ```
 
 ### 3. Verify deployment
 
 ```bash
 kubectl get pods -n kubecounter
-kubectl get ingress -n kubecounter
+kubectl get netpol -n kubecounter
+kubectl get httproute -n kubecounter
 ```
 
 ### 4. Access the application
 
-The application will be available at your ingress controller's IP address:
-- Frontend: `http://<ingress-ip>/`
-- API: `http://<ingress-ip>/api/`
+The application will be available at your gateway hostname:
+- Frontend: `https://kubecounter.mmlabs.me/`
+- API: `https://kubecounter.mmlabs.me/api/`
 
 ## Configuration
 
 ### Database Credentials
 
-Default credentials are stored in `kube/secrets.yaml` (base64 encoded):
+Default credentials are configured via Kustomize secret generator:
 - Username: `devuser`
 - Password: `devpass`
 
 ⚠️ **Important**: Change these credentials in production!
 
-To update credentials:
-
-```bash
-echo -n 'newuser' | base64
-echo -n 'newpassword' | base64
-```
-
-Update the values in `kube/secrets.yaml` and reapply.
-
 ### Environment Variables
 
-Backend configuration (see `kube/backend/deployment.yaml`):
-- `DB_HOST`: PostgreSQL service hostname
-- `DB_PORT`: PostgreSQL port (5432)
-- `DB_NAME`: Database name
+Backend configuration (see `kube/base/backend/deployment.yaml`):
+- `DB_HOST`: PostgreSQL service hostname (`postgres-svc`)
+- `DB_PORT`: PostgreSQL port (`5432`)
+- `DB_NAME`: Database name (`counterdb`)
 - `DB_USER`: Database username (from secret)
 - `DB_PASSWORD`: Database password (from secret)
-- `SERVER_PORT`: API server port (8080)
+- `SERVER_PORT`: API server port (`8080`)
 
 ## Project Structure
 
 ```
 kubecounter/
+├── backend/
+│   ├── Dockerfile
+│   └── main.go
+├── frontend/
+│   ├── Dockerfile
+│   └── src/
 ├── kube/
-│   ├── namespace.yaml
-│   ├── secrets.yaml
-│   ├── backend/
-│   │   ├── deployment.yaml
-│   │   ├── service.yaml
-│   │   └── ingress.yaml
-│   ├── frontend/
-│   │   ├── deployment.yaml
-│   │   ├── service.yaml
-│   │   └── ingress.yaml
-│   └── postgres/
-│       ├── statefulset.yaml
-│       ├── service.yaml
-│       └── init-sql-configmap.yaml
+│   ├── base/
+│   │   ├── kustomization.yaml
+│   │   ├── namespace.yaml
+│   │   ├── default-deny.yaml
+│   │   ├── backend/
+│   │   │   ├── deployment.yaml
+│   │   │   ├── service.yaml
+│   │   │   └── networkpolicy.yaml
+│   │   ├── frontend/
+│   │   │   ├── deployment.yaml
+│   │   │   ├── service.yaml
+│   │   │   ├── httproute.yaml
+│   │   │   └── networkpolicy.yaml
+│   │   └── postgres/
+│   │       ├── statefulset.yaml
+│   │       ├── service.yaml
+│   │       ├── init.sql
+│   │       └── networkpolicy.yaml
+│   └── overlays/
+│       └── dev/
+│           └── kustomization.yaml
 └── README.md
 ```
 
@@ -142,9 +165,9 @@ CREATE TABLE counters (
 ## Resource Limits
 
 All components are configured with resource limits:
-- Frontend: 128Mi memory, 500m CPU
-- Backend: 128Mi memory, 500m CPU
-- Database: 1Gi persistent storage
+- Frontend: 128Mi memory, 250m CPU
+- Backend: 128Mi memory, 250m CPU
+- Database: 10Gi persistent storage
 
 ## Troubleshooting
 
@@ -152,6 +175,12 @@ All components are configured with resource limits:
 ```bash
 kubectl get pods -n kubecounter
 kubectl describe pod <pod-name> -n kubecounter
+```
+
+### Check network policies
+```bash
+kubectl get netpol -n kubecounter
+kubectl describe netpol <policy-name> -n kubecounter
 ```
 
 ### View logs
@@ -168,9 +197,9 @@ kubectl exec -it app-postgres-0 -n kubecounter -- psql -U devuser -d counterdb
 
 ### Common Issues
 
-1. **Pods not starting**: Check if secrets are created before deployments
-2. **Database connection errors**: Verify the postgres service is running and accessible
-3. **Ingress not working**: Ensure Nginx Ingress Controller is installed
+1. **Connection timeouts or 503 errors**: Ensure `frontend-network-policy` and `backend-network-policy` are applied to allow gateway and inter-pod traffic through `default-deny-all`.
+2. **Database connection errors**: Verify backend network policy permits egress on port 5432 and PostgreSQL network policy allows ingress from backend pods.
+3. **HTTPRoute not routing**: Ensure Gateway API controller is installed and `mpes-gateway` is running.
 
 ## Development
 
@@ -178,10 +207,10 @@ To build and push new Docker images:
 
 ```bash
 # Backend
-docker build -t mmaous/kubecounter:server ./backend
-docker push mmaous/kubecounter:server
+docker build -t mmaous/kubecounter-server:latest ./backend
+docker push mmaous/kubecounter-server:latest
 
 # Frontend
-docker build -t mmaous/kubecounter:client ./frontend
-docker push mmaous/kubecounter:client
+docker build -t mmaous/kubecounter-client:latest ./frontend
+docker push mmaous/kubecounter-client:latest
 ```

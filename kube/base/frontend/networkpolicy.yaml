@@ -16,12 +16,7 @@ spec:
     - Egress
   ingress:
     - from:
-        - namespaceSelector:
-            matchExpressions:
-              - key: kubernetes.io/metadata.name
-                operator: In
-                values: ["istio-system", "ingress-nginx", "gateway-system", "kube-system"]
-        - {}
+        - namespaceSelector: {}
       ports:
         - protocol: TCP
           port: 80

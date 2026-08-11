@@ -20,11 +20,7 @@ spec:
             matchLabels:
               app.kubernetes.io/name: kubecounter
               app.kubernetes.io/component: frontend
-        - namespaceSelector:
-            matchExpressions:
-              - key: kubernetes.io/metadata.name
-                operator: In
-                values: ["istio-system", "ingress-nginx", "gateway-system"]
+        - namespaceSelector: {}
       ports:
         - protocol: TCP
           port: 8080

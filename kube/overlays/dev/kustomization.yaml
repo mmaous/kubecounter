@@ -4,10 +4,14 @@ kind: Kustomization
 namespace: kubecounter
 
 resources:
-  - ../../base
+- ../../base
 
 secretGenerator:
-  - name: db-creds
-    literals:
-      - DB_USR=devuser
-      - DB_PWD=devpass
+- literals:
+  - DB_USR=devuser
+  - DB_PWD=devpass
+  name: db-creds
+images:
+- name: mmaous/kubecounter-client
+  newName: mmaous/kubecounter-client
+  newTag: e257622

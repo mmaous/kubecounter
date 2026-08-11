@@ -5,13 +5,17 @@ namespace: kubecounter
 
 resources:
   - namespace.yaml
+  - default-deny.yaml
   - frontend/deployment.yaml
   - frontend/service.yaml
   - frontend/httproute.yaml
+  - frontend/networkpolicy.yaml
   - backend/deployment.yaml
   - backend/service.yaml
+  - backend/networkpolicy.yaml
   - postgres/statefulset.yaml
   - postgres/service.yaml
+  - postgres/networkpolicy.yaml
 
 configMapGenerator:
   - name: postgres-init

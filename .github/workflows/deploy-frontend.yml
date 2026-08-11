@@ -7,6 +7,8 @@ on:
       - dev
     paths:
       - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml' # Trigger if you edit this file
+  workflow_dispatch: # Allows manual triggering from the GitHub Actions UI
 
 jobs:
   build-and-update-manifests:
@@ -32,7 +34,7 @@ jobs:
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
@@ -42,7 +44,9 @@ jobs:
             mmaous/kubecounter-client:dev-latest
 
       - name: Set up Kustomize
-        uses: imranismail/setup-kustomize@v2
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
 
       - name: Update Kustomize image tag
         run: |

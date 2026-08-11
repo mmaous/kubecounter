@@ -153,6 +153,7 @@ const styles = {
     padding: "2rem",
     flexDirection: "row",
     gap: "1rem",
+    flexWrap: "wrap"
   },
   form: {
     display: "flex",

@@ -199,7 +199,7 @@ kubectl exec -it app-postgres-0 -n kubecounter -- psql -U devuser -d counterdb
 
 1. **Connection timeouts or 503 errors**: Ensure `frontend-network-policy` and `backend-network-policy` are applied to allow gateway and inter-pod traffic through `default-deny-all`.
 2. **Database connection errors**: Verify backend network policy permits egress on port 5432 and PostgreSQL network policy allows ingress from backend pods.
-3. **HTTPRoute not routing**: Ensure Gateway API controller is installed and `mpes-gateway` is running.
+3. **HTTPRoute not routing**: Ensure Gateway API controller is installed and `core-gateway` is running.
 
 ## Development
 

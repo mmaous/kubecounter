@@ -10,7 +10,7 @@ ENV NODE_ENV=production
 RUN yarn build
 
 FROM nginx:1.29-alpine
-COPY --from=builder /app/build /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY entrypoint.sh /entrypoint.sh
 

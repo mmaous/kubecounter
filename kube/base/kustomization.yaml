@@ -20,3 +20,4 @@ configMapGenerator:
   - name: postgres-init
     files:
       - postgres/init.sql
+namespace: kubecounter

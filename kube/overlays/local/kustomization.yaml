@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+
+resources:
+  - ../../base
+
+secretGenerator:
+  - literals:
+    - DB_USR=devuser
+    - DB_PWD=devpass
+    name: db-creds
+
+patches:
+  - path: debug-sidecar-patch.yaml
+  - path: storageclass-patch.yaml
+    target:
+      kind: StatefulSet
+      name: app-postgres

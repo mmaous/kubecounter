@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubecounter-client
+spec:
+  template:
+    spec:
+      containers:
+      - name: netshoot
+        image: nicolaka/netshoot
+        command: ["sleep", "infinity"]
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubecounter-server
+spec:
+  template:
+    spec:
+      containers:
+      - name: netshoot
+        image: nicolaka/netshoot
+        command: ["sleep", "infinity"]
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: app-postgres
+spec:
+  template:
+    spec:
+      containers:
+      - name: netshoot
+        image: nicolaka/netshoot
+        command: ["sleep", "infinity"]
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi

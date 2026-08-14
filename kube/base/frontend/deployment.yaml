@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kubecounter-client
-  namespace: kubecounter
   labels:
     app.kubernetes.io/name: kubecounter
     app.kubernetes.io/component: frontend

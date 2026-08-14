@@ -1,5 +1,4 @@
 name: Deploy Frontend to Argo CD
-
 # Trigger ONLY on the dev branch
 on:
   push:
@@ -15,10 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -33,15 +34,18 @@ jobs:
         id: vars
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (multi-platform)
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             mmaous/kubecounter-client:${{ steps.vars.outputs.sha_short }}
             mmaous/kubecounter-client:dev-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Set up Kustomize
         run: |
@@ -58,9 +62,7 @@ jobs:
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-
           git add kube/overlays/dev/kustomization.yaml
           git commit -m "deploy: update frontend image to ${{ steps.vars.outputs.sha_short }} [skip ci]"
-
           # Push strictly to the dev branch!
           git push origin dev
